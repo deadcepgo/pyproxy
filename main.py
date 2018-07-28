@@ -2,13 +2,27 @@ import requests
 from lxml import html
 
 class Proxy():
+    """This is proxy extractor and checker"""
     headers = {
         'Accept':'*/*',
         'User-Agent':'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:61.0) Gecko/20100101 Firefox/61.0'
     }
-    def __init__(self,limit=10,mycode=None):
-        self.mycode = mycode
-        self.limit = limit
+
+    def __init__(self, limit = 10, mycode = None):
+        self.mycode     = mycode
+        self.limit      = limit
+    def is_bad_proxy(self, pip, url):                                                                                                                                              
+        try:        
+            res         = requests.get(url, proxies = {'http' : pip}, headers = self.headers, timeout = 10)   
+        except Exception, detail:
+            print "ERROR:", detail                                                                                                                                          
+            return 1                                                                                                                                                        
+        if res.status_code == 200:                                                                                                                                           
+            return 0                                                                                                                                                        
+        else:                                                                                                                                                               
+            print res.status_code
+            return 1  
+        
     def get_paid_proxies(self):
         url     = 'https://hidemy.name/ru/loginx'
         url1    = 'https://hidemy.name/api/proxylist.txt?out=plain&lang=ru'
@@ -28,6 +42,7 @@ class Proxy():
         else:
             print 'Please input your code on hidemy.name Proxy(mycode="12345")'
             return []
+
     def get_free_proxies(self)
         result  = []
         url     = 'https://www.us-proxy.org'
@@ -43,6 +58,7 @@ class Proxy():
             result.append(':'.join([ip,ports[i]]))
         random.shuffle(result)
         return result
+
     def validate_proxies(self,proxies,url):
         proxys  = []
         for proxy in proxies:
@@ -57,3 +73,9 @@ class Proxy():
         if len(proxys) == 0:
             return 0
         return proxys
+    
+    def validated_free(self,url):
+        return self.validate_proxies(self.get_free_proxies(), url)
+    
+    def validated_paid(self,url):
+        return self.validate_proxies(self.get_paid_proxies(), url)
